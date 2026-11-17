@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Little Prince — Book Trailer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none}
+  body{display:flex;align-items:center;justify-content:center}
+  #stage{position:relative;width:min(100vw,177.78vh);height:min(56.25vw,100vh);container-type:size;background:#000;pointer-events:none;user-select:none;overflow:hidden}
+  canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+  #vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.45) 100%)}
+  .bar{position:absolute;left:0;right:0;height:8cqh;background:#000}
+  #bt{top:0;border-bottom:1px solid rgba(214,176,92,.35)}
+  #bb{bottom:0;border-top:1px solid rgba(214,176,92,.35)}
+  #stage.end .bar{border-color:transparent !important}
+  .t{position:absolute;left:0;right:0;text-align:center;opacity:0;color:#fbeed0;white-space:nowrap;
+     font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-weight:600;
+     text-shadow:0 .25cqw 1.2cqw rgba(0,0,0,.8)}
+  #cap{bottom:0;height:8cqh;line-height:8cqh;font-size:2.5cqw;letter-spacing:.1em;color:#f6e6c0;text-shadow:none}
+  .ly{position:absolute;opacity:0;white-space:nowrap;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-style:italic;font-weight:500;
+      font-size:2.3cqw;letter-spacing:.14em;color:#f4e3b8;text-shadow:0 0 1.6cqw rgba(255,214,120,.5),0 .15cqw .5cqw rgba(0,0,0,.85),0 0 1.2cqw rgba(40,20,10,.7)}
+  #title{top:13cqw;font-family:'Cinzel',Georgia,'Times New Roman',serif;font-weight:600;
+         font-size:5.6cqw;letter-spacing:.18em;color:#f7dc92;text-shadow:0 0 2cqw rgba(255,200,90,.5),0 .3cqw 1.2cqw #000}
+  #sub{top:22.5cqw;font-size:2.4cqw;letter-spacing:.12em}
+  #by0{top:30.2cqw;font-family:'Cinzel',Georgia,serif;font-weight:400;font-size:1.3cqw;letter-spacing:.24em;color:#e9d7ad}
+  #credit{top:50%;transform:translateY(-50%);font-family:'Cinzel',Georgia,'Times New Roman',serif;
+          font-weight:400;font-size:3.4cqw;letter-spacing:.26em;color:#f3e2b3;text-shadow:0 0 2cqw rgba(255,200,90,.35)}
+  #frm{position:absolute;inset:11cqh 4cqw;border:1px solid rgba(232,200,120,.5);opacity:0}
+  #frm::before,#frm::after{content:"✦";position:absolute;color:#e8c878;font-size:1.6cqw;line-height:1}
+  #frm::before{left:-.8cqw;top:-.8cqw;background:#0b1636}#frm::after{right:-.8cqw;bottom:-.8cqw;background:#0b1636}
+  #orn{top:25.9cqw;display:flex;justify-content:center;align-items:center;gap:1.4cqw;color:#e8c878;font-size:1.6cqw}
+  #orn i{display:block;width:13cqw;height:1px;background:linear-gradient(90deg,transparent,#e8c878)}
+  #orn i+b+i{background:linear-gradient(90deg,#e8c878,transparent)}
+  #orn b{font-weight:400}
+  #credit::before{content:"✦";display:block;font-size:1.8cqw;margin-bottom:1.6cqw;color:#c9a64e;letter-spacing:0}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c"></canvas>
+  <div id="vig"></div>
+  <div class="bar" id="bt"></div>
+  <div class="bar" id="bb"></div>
+  <div id="lyrics"></div>
+  <div class="t" id="cap"></div>
+  <div class="t" id="title">THE LITTLE PRINCE</div>
+  <div class="t" id="sub">A story for everyone who was once a child.</div>
+  <div id="frm"></div>
+  <div class="t" id="orn"><i></i><b>✦</b><i></i></div>
+  <div class="t" id="by0">BASED ON THE NOVELLA BY ANTOINE DE SAINT-EXUPÉRY</div>
+  <div class="t" id="credit">By: ANAM BILAL</div>
+</div>
+
+<script>
+(() => {
+const W = 320, H = 180;
+const cv = document.getElementById('c'); cv.width = W; cv.height = H;
+const main = cv.getContext('2d');
+let g = main;
+
+/* ---------- tiny pixel toolkit ---------- */
+const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+const build = fn => { const c = mk(), old = g; g = c.getContext('2d'); fn(); g = old; return c; };
+let seed = 11;
+const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); };
+const P = (x, y, c) => R(x, y, 1, 1, c);
+const A = (a, fn) => { g.globalAlpha = Math.max(0, Math.min(1, a)); fn(); g.globalAlpha = 1; };
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const disc = (cx, cy, r, c) => { g.fillStyle = c; for (let y = -r; y <= r; y++) { const w = Math.floor(Math.sqrt(r * r - y * y) + .5); g.fillRect(Math.round(cx) - w, Math.round(cy) + y, w * 2 + 1, 1); } };
+const ell = (cx, cy, rx, ry, c) => { g.fillStyle = c; for (let y = -ry; y <= ry; y++) { const w = Math.floor(rx * Math.sqrt(Math.max(0, 1 - (y * y) / (ry * ry + .01))) + .5); g.fillRect(Math.round(cx) - w, Math.round(cy) + y, w * 2 + 1, 1); } };
+const hexRGB = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const grad = (stops, n) => Array.from({ length: n }, (_, k) => {
+  const p = k / (n - 1) * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(p)), f = p - i, a = hexRGB(stops[i]), b = hexRGB(stops[i + 1]);
+  return '#' + a.map((v, j) => Math.round(v + (b[j] - v) * f).toString(16).padStart(2, '0')).join('');
+});
+// clean banded gradient: hard bands with a thin checker seam between them
+const sky = (pal, y0 = 0, y1 = H) => {
+  const n = pal.length - 1;
+  for (let y = y0; y < y1; y++) {
+    const t = (y - y0) / (y1 - y0) * n, i = Math.min(n - 1, Math.floor(t)), f = t - i;
+    for (let x = 0; x < W; x++) { let c = pal[i]; if (f > .8) c = ((x + y) & 1) ? pal[i + 1] : pal[i]; if (f > .93) c = pal[i + 1]; P(x, y, c); }
+  }
+};
+const shadedDisc = (cx, cy, r, pal, L = [-.55, -.5, .67]) => {
+  const n = pal.length - 1;
+  for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {
+    if (Math.hypot(x, y) > r + .2) continue;
+    const nx = x / r, ny = y / r, nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+    let l = nx * L[0] + ny * L[1] + nz * L[2]; l = clamp01(l * .9 + .1);
+    const t = l * n, i = Math.min(n - 1, Math.floor(t)), f = t - i;
+    let c = pal[i]; if (f > .8) c = ((cx + x + cy + y) & 1) ? pal[i + 1] : pal[i]; if (f > .92) c = pal[i + 1];
+    P(cx + x, cy + y, c);
+  }
+};
+const sprite = (rows, x, y, pal) => { for (let j = 0; j < rows.length; j++) for (let i = 0; i < rows[j].length; i++) { const ch = rows[j][i]; if (ch !== '.') P(x + i, y + j, pal[ch]); } };
+const dy = (b, a, f, p, x) => Math.round(b + Math.sin(x * f + p) * a + Math.sin(x * f * 2.3 + p * 1.7) * a * .35);
+
+/* ---------- stars, dust, birds ---------- */
+const STARS = Array.from({ length: 170 }, () => ({ x: rnd() * W, y: rnd() * H, z: rnd() < .2 ? 2 : 1, ph: rnd() * 6.28, sp: .6 + rnd() * 2, c: ['#ffffff', '#ffe9a8', '#bcd7ff'][rnd() * 3 | 0], d: .3 + rnd() }));
+const drawStars = (t, ymax, a, drift) => {
+  for (const s of STARS) {
+    if (s.y > ymax) continue;
+    const tw = .55 + .45 * Math.sin(t * s.sp + s.ph), x = ((s.x - t * drift * s.d) % W + W) % W;
+    A(a * tw, () => { P(x, s.y, s.c); if (s.z === 2) { P(x - 1, s.y, s.c); P(x + 1, s.y, s.c); P(x, s.y - 1, s.c); P(x, s.y + 1, s.c); } });
+  }
+};
+const DUST = Array.from({ length: 40 }, () => ({ x: rnd() * W, y: rnd() * H, vx: 2 + rnd() * 4, vy: 3 + rnd() * 6, ph: rnd() * 6.28 }));
+const drawDust = (t, a) => { for (const p of DUST) { const x = (p.x + t * p.vx) % W, y = ((p.y - t * p.vy) % H + H) % H; A(a * (.25 + .75 * Math.pow(Math.sin(t * 2 + p.ph), 2)), () => P(x, y, '#ffe9a0')); } };
+const bigStar = (x, y, t, c = '#fff6c8') => {
+  const k = 2 + Math.round(1.5 + 1.5 * Math.sin(t * 2));
+  A(.15, () => disc(x, y, 6, c));
+  for (let i = -k; i <= k; i++) A(1 - Math.abs(i) / (k + 1), () => { P(x + i, y, c); P(x, y + i, c); });
+  A(.5, () => { P(x - 1, y - 1, c); P(x + 1, y - 1, c); P(x - 1, y + 1, c); P(x + 1, y + 1, c); });
+};
+const shoot = (p, x0, y0, len = 16, dx = -130, dyy = 62) => {
+  if (p < 0 || p > 1) return;
+  const hx = x0 + p * dx, hy = y0 + p * dyy, k = Math.abs(dyy / dx), env = 1 - Math.abs(p - .5) * 1.6;
+  for (let i = 0; i < len; i++) A((1 - i / len) * env, () => P(hx - Math.sign(dx) * i, hy - Math.sign(dyy) * i * k, '#ffffff'));
+};
+const bird = (x, y, t, c) => { if (Math.sin(t * 9) > 0) { P(x - 2, y - 1, c); P(x - 1, y, c); P(x, y, c); P(x + 1, y, c); P(x + 2, y - 1, c); } else { P(x - 2, y + 1, c); P(x - 1, y, c); P(x, y, c); P(x + 1, y, c); P(x + 2, y + 1, c); } };
+const cloud = (x, y, s, c) => { ell(x, y, 10 * s, 3 * s, c); ell(x + 6 * s, y - 2 * s, 7 * s, 3 * s, c); ell(x - 6 * s, y - 1 * s, 6 * s, 2 * s, c); };
+
+/* ---------- characters ---------- */
+const PP = { o: '#2b2238', y: '#f6c84a', Y: '#ffe69a', h: '#c9962a', f: '#fbdcbc', F: '#e8b48e', k: '#2b2238', c: '#f0a08e', s: '#ffd84d', S: '#e0a82a', g: '#3f9b64', G: '#2a6f4a', l: '#74d094', b: '#8a5530', B: '#5a3320' };
+const PRINCE = [
+  "....ooooooo....",
+  "..ooyYYYyyyoo..",
+  ".oyYYyyyyyyyyo.",
+  "oyyYyyyyyyyhyyo",
+  "oyyyyyyyyyyyhyo",
+  ".oyyyffffffyyo.",
+  ".oyyfffffffffyo",
+  ".oyffkfffkffyo.",
+  ".oyffkfffkffyo.",
+  ".oyfcffffffcfyo",
+  "..oofffffffoo..",
+  "...ooofffooo...",
+  ".ossssssssssso.",
+  "ooSsssssssssSoo",
+  "oglggggggggggGo",
+  "oglggggggggggGo",
+  "ogllgggggggggGo",
+  "ofgGggggggggGfo",
+  "offogggggggoffo",
+  ".oobbbbbbbbboo.",
+  ".ogggggggggggo.",
+  ".oggggGoGggggo.",
+  ".oggggGoGggggo.",
+  ".oggggo.oggggo.",
+  ".obbbbo.obbbbo.",
+  ".oBBBBo.oBBBBo."
+];
+const prince = (cx, fy, t) => {
+  const y0 = fy - 26;
+  ell(cx, fy, 9, 1, 'rgba(0,0,0,.28)');
+  for (let i = 0; i < 22; i++) {
+    const yy = y0 + 12 + Math.round(Math.sin(t * 4.5 - i * .45) * (.6 + i * .2) - i * .05);
+    R(cx + 7 + i, yy, 1, 2, i % 5 < 3 ? '#ffd84d' : '#f2c036'); R(cx + 7 + i, yy + 2, 1, 1, '#c9922a');
+  }
+  sprite(PRINCE, cx - 7, y0, PP);
+  const w = Math.round(Math.sin(t * 4)); P(cx + 7 + w, y0 + 3, '#f6c84a'); P(cx + 8 + w, y0 + 2, '#ffe69a');
+};
+const ROSE = [".rRRRr.", "rRRrRRr", "rRrRrRr", "rrrrrrr", ".rrrrr.", "..rrr.."];
+const rose = (x, by, t) => {
+  R(x, by - 8, 1, 8, '#3d8f48'); R(x - 3, by - 5, 3, 1, '#5cb35a'); P(x - 4, by - 6, '#5cb35a'); R(x + 1, by - 3, 3, 1, '#5cb35a'); P(x + 4, by - 4, '#5cb35a');
+  sprite(ROSE, x - 3, by - 14, { r: '#c8324f', R: '#ef6f86' });
+  for (let a = 0; a <= Math.PI; a += .09) A(.55, () => P(x + 9 * Math.cos(a), by - 1 - 15 * Math.sin(a), '#d8f3ff'));
+  A(.55, () => R(x - 9, by - 1, 19, 1, '#d8f3ff'));
+  A(.95, () => { P(x - 6, by - 11, '#ffffff'); P(x - 6, by - 10, '#ffffff'); P(x - 5, by - 13, '#ffffff'); });
+  const pt = (t * .25) % 1; A(Math.sin(pt * Math.PI) * .9, () => P(x - 1 + Math.sin(pt * 9) * 3, by - 6 + pt * 5, '#ef6f86'));
+};
+const volcano = (x, by, t) => {
+  for (let j = 0; j < 10; j++) { const w = 3 + j; R(x - w, by - 10 + j, w * 2 + 1, 1, '#6b4331'); P(x - w, by - 10 + j, '#b07a56'); P(x - w + 1, by - 10 + j, '#8a5a44'); }
+  R(x - 2, by - 11, 5, 1, Math.sin(t * 8) > 0 ? '#ff9a3c' : '#ff6a2a');
+  for (let k = 0; k < 4; k++) { const ph = (t * .35 + k * .25) % 1; A((1 - ph) * .6, () => disc(x + Math.sin(ph * 6 + k) * 3 + ph * 7, by - 13 - ph * 26, Math.round(1 + ph * 3), '#e2dcd8')); }
+};
+const sprout = (x, by) => { R(x, by - 6, 1, 6, '#3b7a3a'); R(x - 2, by - 6, 2, 1, '#5cb35a'); R(x + 1, by - 7, 2, 1, '#5cb35a'); P(x, by - 7, '#7fcf6a'); };
+const fox = (x, fy, d, t) => {
+  const O = '#e8782a', Dk = '#a24d1d', Wt = '#fff3df', K = '#2a1810', Z = 1.35;
+  const z = v => Math.round(v * Z), X = dx => x + z(dx) * d;
+  const E = (dx, dyy, rx, ry, c) => ell(X(dx), fy + z(dyy), z(rx), z(ry), c);
+  const RX = (dx, dyy, w, h, c) => R(d > 0 ? x + z(dx) : x - z(dx) - z(w) + 1, fy + z(dyy), z(w), z(h), c);
+  ell(x, fy, 15, 1, 'rgba(0,0,0,.28)');
+  const w = Math.sin(t * 2.6) * 2;
+  E(-10, -4 + w * .4, 8, 3, O); E(-17, -5 + w, 3, 2, Wt); E(-9, -5 + w * .4, 5, 1, Dk);
+  E(0, -8, 6, 8, O); E(-2, -4, 3, 3, Dk); E(3, -7, 3, 6, Wt);
+  RX(2, -3, 2, 3, K); RX(5, -3, 2, 3, K);
+  E(4, -17, 5, 4, O); RX(7, -16, 4, 2, Wt); RX(10, -17, 1, 1, K); RX(5, -18, 1, 1, K);
+  RX(2, -24, 2, 3, O); RX(3, -25, 1, 1, O); RX(6, -24, 2, 3, O); RX(7, -25, 1, 1, O); RX(3, -23, 1, 1, Dk); RX(7, -23, 1, 1, Dk);
+};
+const HEART = [".rr.rr.", "rrrrrrr", "rrrrrrr", ".rrrrr.", "..rrr..", "...r..."];
+const plane = (x, y) => {
+  const o = i => Math.round((23 - i) * .22);
+  for (let i = 0; i < 24; i++) { R(x + i, y + o(i), 1, 5, i < 3 ? '#b9bcc8' : i > 19 ? '#7e2a26' : '#9c3b32'); P(x + i, y + o(i), '#d97a66'); }
+  for (let i = 4; i < 20; i++) { R(x + i, y + o(i) - 7, 1, 2, '#d8b45c'); R(x + i, y + o(i) + 7, 1, 2, '#b8944a'); }
+  R(x + 8, y + o(8) - 5, 1, 12, '#5b4a30'); R(x + 16, y + o(16) - 5, 1, 12, '#5b4a30');
+  R(x + 22, y + o(22) - 5, 2, 5, '#7e2a26'); R(x - 2, y + o(0) - 3, 1, 10, '#3a3a44');
+};
+const fire = (x, y, t) => {
+  A(.1 + .03 * Math.sin(t * 9), () => disc(x, y - 4, 30, '#ff9a3c')); A(.14, () => disc(x, y - 4, 18, '#ffc46a'));
+  R(x - 5, y - 1, 11, 2, '#4a2c1a'); R(x - 4, y - 2, 9, 1, '#6a3e22');
+  for (let i = 0; i < 5; i++) { const h = 7 + Math.round(Math.sin(t * 11 + i * 1.7) * 2.5 + 2.5), fx = x - 4 + i * 2; R(fx, y - 2 - h, 2, h, i % 2 ? '#ffb23c' : '#ff7a1f'); R(fx, y - 2 - h * .55, 1, Math.round(h * .5), '#ffe38a'); }
+  for (let k = 0; k < 6; k++) { const ph = (t * .6 + k * .17) % 1; A(1 - ph, () => P(x + Math.sin(ph * 7 + k * 2) * 5, y - 10 - ph * 26, '#ffd27a')); }
+};
+const pilot = (x, fy) => {
+  const c = '#191424';
+  R(x, fy - 10, 9, 10, c); R(x - 1, fy - 3, 3, 3, c); disc(x + 4, fy - 14, 3, c); R(x + 1, fy - 18, 7, 2, '#2a2030'); R(x + 6, fy - 17, 3, 1, '#2a2030');
+  R(x + 8, fy - 10, 1, 9, '#d8803c'); R(x + 7, fy - 15, 1, 3, '#d8803c'); R(x + 9, fy - 5, 3, 4, c);
+  ell(x + 4, fy, 9, 1, 'rgba(0,0,0,.25)');
+};
+const cactus = (x, fy) => { const c = '#1c3040', l = '#35566a'; R(x, fy - 18, 4, 18, c); R(x - 5, fy - 12, 3, 2, c); R(x - 5, fy - 16, 2, 5, c); R(x + 6, fy - 9, 3, 2, c); R(x + 8, fy - 14, 2, 6, c); R(x + 3, fy - 17, 1, 15, l); };
+
+/* ---------- planets ---------- */
+const GREENS = ['#16302a', '#22503a', '#2f7040', '#43924a', '#62b455', '#8ad46a', '#b6ec88'];
+const mkPlanet = r => {
+  const S = r * 2 + 4, c = document.createElement('canvas'); c.width = c.height = S; const old = g; g = c.getContext('2d');
+  const m = r + 2;
+  disc(m, m, r + 1, '#10241d');
+  shadedDisc(m, m, r, GREENS);
+  for (let a = -1.35; a <= 1.35; a += .16) {
+    const x = Math.round(m + Math.sin(a) * r), y = Math.round(m - Math.cos(a) * r);
+    R(x, y - 2, 1, 3, '#9fe070'); P(x + 1, y - 1, '#6fb44f'); P(x - 1, y - 1, '#6fb44f');
+    if (rnd() < .35) { P(x, y - 3, rnd() < .5 ? '#ff9ab0' : '#fff3c0'); }
+  }
+  for (let i = 0; i < r * 1.2; i++) {
+    const a = rnd() * 6.283, d = r * (.15 + .75 * Math.sqrt(rnd())), x = Math.round(m + Math.cos(a) * d), y = Math.round(m + Math.sin(a) * d);
+    if (Math.hypot(x - m, y - m) < r - 2) { P(x, y, x < m ? '#a6e27a' : '#1c4430'); P(x + 1, y, x < m ? '#8ad46a' : '#1c4430'); }
+  }
+  g = old; return c;
+};
+const PL22 = mkPlanet(22), PL26 = mkPlanet(26), PL46 = mkPlanet(46), PL30 = mkPlanet(30);
+
+/* ---------- backgrounds (baked once) ---------- */
+const milky = () => { for (let i = 0; i < 520; i++) { const x = rnd() * W, yc = 150 - x * .4, y = yc + (rnd() + rnd() + rnd() - 1.5) * 28; A(.18 + rnd() * .3, () => P(x, y, rnd() < .5 ? '#9fb4ff' : '#e6ecff')); } };
+const nebula = (cx, cy, c, n) => { for (let i = 0; i < n; i++) { const x = cx + (rnd() + rnd() + rnd() - 1.5) * 50, y = cy + (rnd() + rnd() + rnd() - 1.5) * 24; A(.1 + rnd() * .18, () => R(x, y, 2, 1, c)); } };
+const bgA = build(() => { sky(grad(['#05070f', '#0a1235', '#142a62', '#2a4f8e'], 9)); nebula(70, 50, '#3fa6b8', 260); nebula(250, 120, '#d46a8a', 240); nebula(150, 90, '#6a7ad8', 200); milky(); });
+const moonC = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 32; const q = c.getContext('2d');
+  for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) {
+    const a = Math.hypot(x - 16, y - 16) <= 13, b = Math.hypot(x - 21, y - 12) <= 11;
+    if (a && !b) { q.fillStyle = Math.hypot(x - 16, y - 16) > 11.5 ? '#fff7dc' : '#f3e2b4'; q.fillRect(x, y, 1, 1); }
+  }
+  return c;
+})();
+
+const DUNES = [[116, 9, .026, 1, ['#3a4a86', '#1e2850']], [133, 8, .02, 3.2, ['#58679c', '#2c3562']], [153, 6, .017, 2, ['#9a86a8', '#463e68']]];
+const bgB = build(() => {
+  sky(grad(['#050813', '#0d1a42', '#233f7a', '#6a74a8', '#f0b080'], 11), 0, 128);
+  A(.06, () => disc(240, 38, 42, '#bcd0ff')); A(.08, () => disc(240, 38, 30, '#bcd0ff')); A(.12, () => disc(240, 38, 21, '#e8efff'));
+  disc(240, 38, 15, '#f6ead0'); disc(236, 34, 3, '#dccfae'); disc(245, 42, 4, '#dccfae'); disc(244, 31, 2, '#dccfae');
+  DUNES.forEach(([b, a, f, p, cols]) => {
+    for (let x = 0; x < W; x++) {
+      const y = dy(b, a, f, p, x);
+      const s = (dy(b, a, f, p, x + 5) - dy(b, a, f, p, x - 5)) / 10; // smoothed slope
+      R(x, y, 1, H - y, cols[1]);
+      if (s > 0) { // moonlit side: soft light band under the crest
+        const h = Math.max(3, Math.min(16, Math.round(3 + s * 26)));
+        R(x, y, 1, h, cols[0]); R(x, y, 1, Math.max(1, h >> 2), '#b5c2ee');
+        if (rnd() < .05) R(x, y + h + 1, 4, 1, cols[0]);
+      } else P(x, y, cols[0]);
+    }
+  });
+  cactus(288, dy(...DUNES[2].slice(0, 4), 288) + 2);
+  R(205, dy(...DUNES[2].slice(0, 4), 205) - 3, 6, 4, '#2a2d4a'); R(207, dy(...DUNES[2].slice(0, 4), 207) - 4, 3, 1, '#2a2d4a');
+});
+
+const skyS = build(() => sky(grad(['#14224a', '#2f4f8a', '#c47a9a', '#f5a870', '#ffdc96'], 12)));
+const skyD = build(() => sky(grad(['#050a22', '#0e2050', '#1f4070', '#3a5a88'], 9)));
+const seaB = (cols, lights) => build(() => {
+  cols.forEach((c, k) => {
+    const base = 138 + k * 14;
+    for (let x = -6; x < W + 12; x += 9 + (rnd() * 4 | 0)) { const r = 7 + (rnd() * 6 | 0), yy = base + (rnd() * 3 | 0); disc(x, yy - 2, r, lights[k]); disc(x, yy, r, c); }
+    R(0, base + 8, W, H, c);
+  });
+});
+const seaS = seaB(['#f2b08c', '#da8a90', '#a8688e'], ['#ffe2b8', '#f8bca8', '#cc90b0']);
+const seaD = seaB(['#16284f', '#101d3f', '#0a1430'], ['#34548a', '#243f72', '#183060']);
+
+const bgD = build(() => {
+  sky(grad(['#3a64a0', '#7fa0c8', '#f2c890', '#f7a85c', '#e8743f'], 12), 0, 126);
+  A(.2, () => disc(236, 96, 34, '#ffe3a0')); A(.3, () => disc(236, 96, 27, '#ffe9b0')); disc(236, 96, 21, '#fff2c4');
+  const hill = (b, a, f, p, col, rim) => { for (let x = 0; x < W; x++) { const y = dy(b, a, f, p, x); R(x, y, 1, H - y, col); P(x, y, rim); } };
+  hill(108, 5, .025, .5, '#8a8c5e', '#b8b878'); hill(115, 4, .04, 2, '#a39a55', '#c8bd6e');
+  sky(grad(['#e3b24a', '#c58b2e', '#a06c26'], 8), 124, H);
+});
+const bgE = build(() => {
+  sky(grad(['#03050e', '#08113a', '#122866', '#22488a'], 9)); milky();
+  nebula(90, 70, '#3fa6b8', 160); nebula(240, 40, '#d46a8a', 160);
+  const ring = (cx, cy, back) => { for (let a = 0; a < 6.283; a += .05) { const s = Math.sin(a); if ((s > 0) === back) continue; P(cx + 18 * Math.cos(a), cy + 5 * s - 3 * Math.cos(a) * .3, '#e8b878'); P(cx + 20 * Math.cos(a), cy + 6 * s - 3 * Math.cos(a) * .3, '#a8703a'); } };
+  ring(268, 118, false); shadedDisc(268, 118, 10, ['#4a2214', '#8a421f', '#c87030', '#f0a850', '#ffd890']); ring(268, 118, true);
+  shadedDisc(28, 92, 6, ['#0f3b44', '#1f6f73', '#3fb0a0', '#a5ecd0']);
+  shadedDisc(305, 70, 3, ['#4a3a5a', '#8a7aa0', '#d8c8ea']);
+});
+
+/* ---------- scenes ---------- */
+const scA = lt => {
+  g.drawImage(bgA, 0, 0);
+  drawStars(lt, H, 1, 3);
+  A(.06, () => disc(242, 30, 40, '#cfe0ff')); A(.09, () => disc(242, 30, 26, '#cfe0ff'));
+  g.drawImage(moonC, 226, 14);
+  aurora(lt, clamp01(lt / 3));
+  constel([[40, 130], [58, 118], [74, 126], [92, 110], [112, 118], [128, 96]], lt, clamp01((lt - 1) / 3));
+  constel([[246, 92], [262, 104], [280, 96], [270, 120]], lt + 2, clamp01((lt - 2) / 3));
+  bigStar(60, 110, lt);
+  shoot((lt - 4.6) / 1.2, 270, 8);
+  shoot((lt - 7.0) / 1.0, 200, 20, 10, -90, 44);
+  { const p = lt / 9, hx = 330 - p * 380, hy = 14 + p * 64; for (let i = 0; i < 38; i++) { A((1 - i / 38) * .85, () => { P(hx + i, hy - i * .22, i < 4 ? '#ffffff' : (i % 5 < 3 ? '#9fe8ff' : '#6aa8ff')); if (i < 10) P(hx + i, hy - i * .22 + 1, '#6aa8ff'); }); } disc(hx, hy, 2, '#ffffff'); A(.2, () => disc(hx, hy, 6, '#9fe8ff')); }
+  if (lt > 2.5) {
+    const a = clamp01((lt - 2.5) / 2.5), by = Math.round(Math.sin(lt * 1.2) * 2), cx = 170, cy = 134 + by;
+    A(a * .12, () => disc(cx, cy, 36, '#ffe9a0'));
+    A(a, () => { g.drawImage(PL22, cx - 24, cy - 24); prince(cx, cy - 21, lt); });
+  }
+};
+
+const scB = lt => {
+  g.drawImage(bgB, 0, 0);
+  drawStars(lt, 108, 1, .8);
+  const nb = x => dy(...DUNES[2].slice(0, 4), x), mb = x => dy(...DUNES[1].slice(0, 4), x);
+  if (lt > 4.5) {
+    const px = 275 - (lt - 4.5) * 9.5, bob = Math.round(Math.abs(Math.sin(lt * 5)));
+    A((lt - 4.5) / 1.5, () => prince(px, mb(px) + 3 - bob, lt));
+  }
+  ripples(133, 8, .02, 3.2, lt); ripples(153, 6, .017, 2, lt);
+  if (lt > 4.5) { const px = 275 - (lt - 4.5) * 9.5; for (let x = Math.floor(px) + 8; x < 285; x += 7) A(.55, () => { R(x, mb(x) + 4, 2, 1, '#2a3260'); R(x + 3, mb(x + 3) + 3, 2, 1, '#2a3260'); }); }
+  snake(236, mb(236) + 5, lt);
+  well(186, nb(186) + 3);
+  plane(30, nb(42) - 9);
+  ell(54, nb(54) + 3, 18, 2, 'rgba(0,0,0,.25)');
+  pilot(98, nb(100) + 2);
+  fire(122, nb(122) + 1, lt);
+  A(.07 + .03 * Math.sin(lt * 9), () => R(0, 0, W, H, '#ff9a3c'));
+  windStreaks(lt, 1, '#cdd6f5');
+  glowflies(lt, .9, '#9fe8ff', 12);
+  drawDust(lt, .5);
+};
+
+const scC = lt => {
+  const f = clamp01((lt - 3) / 6), sy = 92 + lt * 3.6;
+  g.drawImage(skyS, 0, 0);
+  A(.18 * (1 - f), () => disc(78, sy, 27, '#ffd98f')); A(.3 * (1 - f), () => disc(78, sy, 21, '#ffe7a8')); A(1 - f, () => disc(78, sy, 16, '#fff3c6'));
+  A(f, () => g.drawImage(skyD, 0, 0));
+  drawStars(lt + 20, 140, f, 2);
+  for (let k = 0; k < 4; k++) {
+    const x = ((k * 95 - lt * (3 + k)) % (W + 60) + W + 60) % (W + 60) - 30, y = 38 + k * 14, s = 1 + k * .2;
+    A(1 - f, () => cloud(x, y, s, '#f6b99a')); A(f * .6, () => cloud(x, y, s, '#2e4a7c'));
+  }
+  if (lt > 2) for (let k = 0; k < 5; k++) A(.85, () => bird(345 - (lt - 2) * 22 + k * 9, 48 + k * 3 + (k % 2) * 5, lt + k * .3, '#1b2147'));
+  A(1 - f, () => g.drawImage(seaS, 0, 0)); A(f, () => g.drawImage(seaD, 0, 0));
+  for (let i = 0; i < 44; i++) { const x = (i * 47 + 5) % W, y = 142 + (i * 13 % 36), tw = Math.max(0, Math.sin(lt * 2.5 + i * 1.7)); A(f * tw * .85, () => P(x, y, '#cfe0ff')); A((1 - f) * tw * .6, () => P(x, y, '#fff0d0')); }
+  const cx = 170, cy = 170, r = 46, bob = Math.round(Math.sin(lt * .9));
+  g.drawImage(PL46, cx - r - 2, cy - r - 2 + bob);
+  const top = k => cy + bob - Math.sqrt(r * r - k * k);
+  volcano(cx - 30, Math.round(top(-30)) + 1, lt);
+  { const vx = cx - 14, vb = Math.round(top(-14)) + 1; for (let j = 0; j < 5; j++) { const w = 2 + j; R(vx - w, vb - 5 + j, w * 2 + 1, 1, '#5d3d2e'); P(vx - w, vb - 5 + j, '#9a6c4c'); } R(vx - 1, vb - 6, 3, 1, '#2a1a14'); }
+  chair(cx + 21, Math.round(top(21)) + 1);
+  sprout(cx + 9, Math.round(top(9)) + 1); sprout(cx + 14, Math.round(top(14)) + 1); sprout(cx - 36, Math.round(top(-36)) + 1);
+  rose(cx + 33, Math.round(top(33)) + 1, lt);
+  prince(cx, Math.round(top(0)) + 1, lt);
+  petals(lt, 1 - f * .4);
+  glowflies(lt, f, '#ffe08a', 14);
+  drawDust(lt, f * .6);
+};
+
+const wheat = (base, h, col, tip, t, so) => {
+  for (let x = 0; x < W; x += 2) {
+    const hh = h + ((x * 37 + so) % 7) - 3, sw = Math.sin(t * 1.7 + x * .06 + so) * 2.2;
+    for (let k = 0; k < hh; k++) { const q = k / hh; R(x + Math.round(sw * q * q), base - k, 1, 1, col); }
+    R(x + Math.round(sw), base - hh - 1, 2, 2, tip);
+  }
+};
+const scD = lt => {
+  g.drawImage(bgD, 0, 0);
+  A(.1 + .04 * Math.sin(lt * 1.5), () => disc(236, 96, 44, '#fff0c0'));
+  T_NOW = lt;
+  for (let k = 0; k < 3; k++) { const x = ((k * 120 - lt * (4 + k * 2)) % (W + 80) + W + 80) % (W + 80) - 40; A(.75, () => cloud(x, 26 + k * 13, 1.2 + k * .2, '#ffe6c4')); A(.4, () => cloud(x, 28 + k * 13, 1.1 + k * .2, '#f7b98a')); }
+  for (let k = 0; k < 4; k++) A(.8, () => bird(30 + ((lt * 14 + k * 11) % 360), 58 + k * 5 + Math.sin(lt + k) * 3, lt + k * .4, '#5a4a3a'));
+  tree(38, dy(108, 5, .025, .5, 38) + 4, 1.6); tree(62, dy(115, 4, .04, 2, 62) + 4, 1.1); house(280, dy(115, 4, .04, 2, 284) + 4);
+  rays(236, 96, lt, .09, '#fff0b8');
+  wheat(142, 12, '#b88a2e', '#e6c25a', lt, 3);
+  prince(96, 148, lt);
+  fox(212, 148, -1, lt);
+  wheat(158, 16, '#d9a83c', '#f6dc86', lt, 11);
+  wheat(172, 20, '#eec55a', '#fff0a8', lt, 23);
+  flowers(lt);
+  for (let k = 0; k < 4; k++) butterfly(lt, k, ['#ffb0d0', '#9ad0ff', '#ffe08a', '#ffffff'][k]);
+  if (lt > 3.2) { const ph = ((lt - 3.2) % 3) / 3; A(Math.sin(ph * Math.PI), () => sprite(HEART, 150 + Math.sin(ph * 8) * 3, 118 - ph * 24, { r: '#e8455f' })); }
+  for (let i = 0; i < 26; i++) { const x = (i * 71 + 13) % W, y = 148 + (i * 31 % 28), v = Math.max(0, Math.sin(lt * 3 + i * 2.1)); A(v * .9, () => { P(x, y, '#ffffff'); P(x + 1, y, '#fff3b0'); }); }
+  petals(lt, .8);
+  glowflies(lt, .5, '#ffe08a', 10);
+  drawDust(lt, .9);
+};
+
+const scE = lt => {
+  g.drawImage(bgE, 0, 0);
+  drawStars(lt + 40, H, 1, 4);
+  asteroids(lt, .85);
+  constel([[150, 40], [168, 52], [190, 44], [210, 60], [232, 48]], lt, clamp01((lt - 1) / 3));
+  bigStar(205, 100, lt);
+  shoot((lt - 3.2) / 1.1, 290, 14);
+  const cx = 62, cy = 160, r = 26;
+  g.drawImage(PL26, cx - r - 2, cy - r - 2);
+  rose(cx + 15, Math.round(cy - Math.sqrt(r * r - 225)) + 1, lt);
+  prince(cx - 5, cy - r + 1, lt);
+  petals(lt, .9);
+  glowflies(lt, .6, '#ffe08a', 8);
+  drawDust(lt, .8);
+};
+
+/* ---------- extra prettiness ---------- */
+const glowflies = (t, a, col, n = 16) => {
+  for (let i = 0; i < n; i++) {
+    const x = (i * 53 + Math.sin(t * .5 + i * 1.9) * 16 + t * (2 + i % 3)) % (W + 20) - 10, y = 70 + (i * 29 % 90) + Math.sin(t * .8 + i * 2.3) * 9;
+    const p = .5 + .5 * Math.sin(t * 2.2 + i * 1.3);
+    A(a * p * .16, () => disc(x, y, 4, col)); A(a * (.35 + .65 * p), () => { P(x, y, '#fffbe0'); P(x + 1, y, col); });
+  }
+};
+const petals = (t, a) => {
+  for (let i = 0; i < 12; i++) {
+    const ph = (t * .09 + i * .083) % 1, x = 20 + i * 25 + Math.sin(t * .9 + i) * 14 + ph * 40, y = ph * (H + 10) - 6;
+    A(a * Math.sin(ph * Math.PI), () => { P(x, y, '#ff9ab0'); P(x + 1, y, '#e8566f'); P(x, y + 1, '#ff9ab0'); });
+  }
+};
+const rays = (sx, sy, t, a, col) => {
+  for (let k = 0; k < 6; k++) {
+    const ang = -2.9 + k * .38 + Math.sin(t * .35 + k) * .04, w = 5 + (k % 3) * 3;
+    for (let y = sy; y < 130; y++) { const x = sx + Math.cos(ang) * (y - sy) / Math.max(.2, Math.sin(-ang) * -1) * .55; A(a * (1 - (y - sy) / 140) * (.45 + .25 * Math.sin(t + k)), () => R(x - w / 2, y, w + (y - sy) * .08, 1, col)); }
+  }
+};
+const aurora = (t, a) => {
+  for (let x = 0; x < W; x++) {
+    const y = 34 + Math.sin(x * .03 + t * .5) * 12 + Math.sin(x * .07 - t * .8) * 4, h = 10 + Math.sin(x * .05 + t) * 5;
+    for (let k = 0; k < h; k++) A(a * (1 - k / h) * .18, () => P(x, y + k, k < h * .4 ? '#6af0c0' : '#8a7aff'));
+  }
+};
+
+/* ---------- lamplighter scene ---------- */
+const LL = ["..ooooo..", ".ohhhhho.", "ohhhhhhho", "..offfo..", "..offfo..", "...ooo...", ".occcccco", "occcCcccf", "occcCcccf", "occcCccco", ".occcccco", "..occcco.", "..obo.obo", "..obo.obo", ".ooo..ooo"];
+const well = (x, by) => {
+  R(x - 6, by - 4, 13, 4, '#5a5f84'); for (let i = 0; i < 13; i += 3) R(x - 6 + i, by - 4, 1, 4, '#454a6a'); R(x - 6, by - 5, 13, 1, '#8a90b8');
+  R(x - 5, by - 13, 1, 9, '#4a3a2a'); R(x + 5, by - 13, 1, 9, '#4a3a2a'); R(x - 6, by - 14, 13, 1, '#6b4a2e'); R(x - 6, by - 15, 13, 1, '#8a6038');
+  R(x, by - 13, 1, 6, '#c8a060'); R(x - 1, by - 8, 3, 2, '#7a5430'); P(x, by - 9, '#2a2030');
+  A(.2, () => R(x - 4, by - 5, 9, 1, '#9fe8ff'));
+};
+const scF = lt => {
+  g.drawImage(bgE, 0, 0);
+  drawStars(lt + 10, H, 1, 3);
+  asteroids(lt, .5);
+  shoot((lt - 5.5) / 1.1, 300, 20);
+  const on = Math.sin(lt * 1.3) > -.75;
+  // prince's little planet, left
+  const px = 66, py = 132 + Math.round(Math.sin(lt * 1.1) * 2);
+  A(.1, () => disc(px, py, 30, '#ffe9a0'));
+  g.drawImage(PL22, px - 24, py - 24);
+  prince(px, py - 21, lt);
+  // lamplighter's tiny planet, right
+  const cx = 212, cy = 146 + Math.round(Math.sin(lt * .9 + 1) * 2), r = 30, top = k => cy - Math.sqrt(r * r - k * k);
+  if (on) { A(.12 + .03 * Math.sin(lt * 12), () => disc(cx - 8, top(-8) - 18, 34, '#ffd870')); A(.18, () => disc(cx - 8, top(-8) - 18, 20, '#ffe39a')); }
+  g.drawImage(PL30, cx - r - 2, cy - r - 2);
+  const lx = cx - 8, lb = Math.round(top(-8)) + 1;
+  R(lx, lb - 17, 2, 17, '#8a84a8'); R(lx, lb - 17, 1, 17, '#b8b2d4'); R(lx - 2, lb - 3, 6, 3, '#8a84a8'); R(lx - 2, lb - 20, 6, 1, '#b8b2d4'); R(lx - 1, lb - 19, 4, 3, on ? '#fff3b0' : '#4a4658'); if (on) { P(lx, lb - 18, '#ffffff'); for (let i = 0; i < 4; i++) A(.5 - i * .1, () => P(lx - 1 + i * 2, lb - 14 + i * 3, '#ffd870')); }
+  // lamplighter walks a tiny circuit
+  const wx = Math.round(Math.sin(lt * .5) * 9);
+  sprite(LL, cx + 6 + wx - 4, Math.round(top(6 + wx)) - 14, { o: '#1a1626', h: '#3a3a6a', f: '#f0c8a0', c: '#a8384a', C: '#7a2438', b: '#3a2a30' });
+  ell(cx + 6 + wx, Math.round(top(6 + wx)) + 1, 6, 1, 'rgba(0,0,0,.3)');
+  petals(lt, .5);
+  glowflies(lt, .8, '#ffe08a', 9);
+  drawDust(lt, .8);
+};
+
+/* ---------- more detail helpers ---------- */
+const line = (x0, y0, x1, y1, c) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) if (i % 2 === 0) P(Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), c); };
+const constel = (pts, t, a) => {
+  A(a * .5, () => { for (let i = 1; i < pts.length; i++) line(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], '#bcd7ff'); });
+  pts.forEach(([x, y], i) => A(a * (.7 + .3 * Math.sin(t * 2 + i)), () => { P(x, y, '#ffffff'); P(x - 1, y, '#bcd7ff'); P(x + 1, y, '#bcd7ff'); P(x, y - 1, '#bcd7ff'); P(x, y + 1, '#bcd7ff'); }));
+};
+const SNAKE = ["..yyy....", ".yYYyy...", "yy..yyyy.", "y....yYy.", ".......yk"];
+const snake = (x, y, t) => { const sw = Math.round(Math.sin(t * 2)); sprite(SNAKE, x, y, { y: '#f2c84a', Y: '#fff0a0', k: '#2b2238' }); P(x + 9 + sw, y + 4, '#d8402a'); };
+const chair = (x, by) => { R(x - 4, by - 9, 1, 7, '#8a5530'); R(x - 4, by - 3, 8, 1, '#c8803e'); R(x - 3, by - 8, 1, 5, '#c8803e'); R(x + 3, by - 2, 1, 2, '#6b4a2e'); R(x - 4, by - 2, 1, 2, '#6b4a2e'); };
+const butterfly = (t, k, col) => {
+  const x = (k * 97 + t * (6 + k * 2)) % (W + 30) - 15, y = 112 + k * 14 + Math.sin(t * 1.3 + k * 2) * 10, f = Math.sin(t * 16 + k) > 0;
+  if (f) { R(x - 2, y - 2, 2, 3, col); R(x + 1, y - 2, 2, 3, col); } else { R(x - 2, y, 2, 2, col); R(x + 1, y, 2, 2, col); }
+  P(x, y, '#2b2238'); P(x, y + 1, '#2b2238');
+};
+const flowers = t => {
+  for (let i = 0; i < 46; i++) {
+    const x = (i * 83 + 17) % W, y = 150 + (i * 29 % 26), sw = Math.round(Math.sin(t * 1.7 + x * .06 + 3) * 1.5), c = ['#5b8cff', '#ff5a6e', '#ffffff', '#ff9ac0'][i % 4];
+    R(x + sw, y + 2, 1, 3, '#4a8a3a'); P(x + sw, y, c); P(x + sw - 1, y + 1, c); P(x + sw + 1, y + 1, c); P(x + sw, y + 1, '#ffe08a'); P(x + sw, y + 2, c);
+  }
+};
+const tree = (x, by, s) => { R(x - 1, by - 3 * s, 2, 3 * s + 1, '#4a3320'); disc(x, by - 4 * s, 5 * s, '#587340'); disc(x - 3 * s, by - 3 * s, 3 * s, '#4a6334'); disc(x + 3 * s, by - 5 * s, 3 * s, '#6b8a4a'); };
+const house = (x, by) => {
+  R(x, by - 9, 13, 9, '#d09a6a'); R(x, by - 3, 13, 3, '#b27a52');
+  for (let j = 0; j < 6; j++) R(x - 2 + j, by - 10 - j, 17 - j * 2, 1, j % 2 ? '#a8432e' : '#92382a');
+  R(x + 2, by - 7, 3, 3, '#ffe08a'); R(x + 8, by - 6, 3, 6, '#6b4630'); R(x + 11, by - 15, 2, 4, '#8a6a58');
+  for (let k = 0; k < 3; k++) { const ph = (k * .33 + (T_NOW * .15)) % 1; A((1 - ph) * .5, () => disc(x + 12 + ph * 6, by - 18 - ph * 14, 1 + ph * 2, '#e8e0d8')); }
+};
+let T_NOW = 0;
+const asteroids = (t, a) => {
+  for (let i = 0; i < 11; i++) {
+    const x = ((i * 61 + t * (3 + i % 4) * (i % 2 ? 1 : -1)) % (W + 40) + W + 40) % (W + 40) - 20, y = 120 + (i * 17 % 50) + Math.sin(t * .6 + i) * 4, r = 1 + (i % 3);
+    A(a, () => { ell(x, y, r + 1, r, '#6d6377'); P(x - 1, y - 1, '#a094ac'); P(x + 1, y + 1, '#4a4258'); });
+  }
+};
+const windStreaks = (t, a, col) => { for (let i = 0; i < 14; i++) { const x = (i * 41 + t * (26 + i % 4 * 8)) % (W + 30) - 15, y = 118 + (i * 17 % 40); A(a * (.2 + .15 * Math.sin(t + i)), () => R(x, y, 5 + (i % 3) * 4, 1, col)); } };
+const ripples = (base, amp, f, ph, t) => { for (let x = 0; x < W; x += 3) { const y = dy(base, amp, f, ph, x) + 6 + ((x * 7) % 9); A(.2, () => R(x, y, 4, 1, '#8c9bd0')); } };
+
+/* ---------- drifting original lullaby lines (no music) ---------- */
+const LY = [
+  [2.0, 8.5, "hush now, hush now, the night is wide", 14, 30],
+  [10.5, 17.5, "softly, softly, the sand is sleeping", 7, 15],
+  [14.0, 21.0, "somewhere a small light is keeping watch", 18, 40],
+  [21.5, 28.5, "float, little planet, float away", 50, 18],
+  [26.0, 33.0, "one rose, one star, one secret kept", 12, 34],
+  [30.6, 38.0, "one small lamp keeps the dark away", 8, 14],
+  [40.5, 47.0, "golden fields remember you", 9, 15],
+  [49.5, 56.0, "hush now, hush now, the stars are near", 8, 14]
+];
+const lyBox = document.getElementById('lyrics');
+const lyEls = LY.map(([a, b, txt, x, y]) => { const d = document.createElement('div'); d.className = 'ly'; d.textContent = txt; d.style.left = x + '%'; d.style.top = y + '%'; lyBox.appendChild(d); return d; });
+
+/* ---------- timeline ---------- */
+const SC = [{ s: 0, d: 9, f: scA }, { s: 9, d: 10, f: scB }, { s: 19, d: 11, f: scC }, { s: 30, d: 9, f: scF }, { s: 39, d: 9, f: scD }, { s: 48, d: 12, f: scE }];
+const TOTAL = 69;
+const CAPS = [
+  [1.2, 4.6, "Far beyond the last star…"],
+  [5.0, 8.4, "a story waits, soft as the night."],
+  [10.0, 14.2, "A pilot, lost in the silent desert."],
+  [14.6, 18.4, "A small voice asks him for a sheep."],
+  [20.2, 24.6, "A boy from a tiny, faraway planet."],
+  [25.0, 29.4, "And one rose he could never forget."],
+  [31.0, 34.8, "A lamplighter keeps one small light alive."],
+  [35.2, 38.4, "even when no one is watching."],
+  [40.0, 43.6, "On Earth, he meets a quiet fox."],
+  [44.0, 47.4, "And learns what it means to belong."],
+  [49.0, 52.4, "A tale of love, and loss, and stars."]
+];
+const $ = id => document.getElementById(id);
+const stageEl = $('stage'), capEl = $('cap'), titleEl = $('title'), subEl = $('sub'), by0El = $('by0'), frmEl = $('frm'), ornEl = $('orn'), credEl = $('credit');
+const fd = (t, a, b, fi = 1.2, fo = 1) => (t < a || t > b) ? 0 : Math.min(1, (t - a) / fi, (b - t) / fo);
+
+const frame = now => {
+  const t = ((now - t0) / 1000) % TOTAL;
+  main.globalAlpha = 1; main.fillStyle = '#000'; main.fillRect(0, 0, W, H); g = main;
+  for (const s of SC) {
+    if (t >= s.s && t < s.s + s.d) {
+      const lt = t - s.s; s.f(lt);
+      const fa = Math.min(1, lt / .9, (s.d - lt) / .9);
+      A(1 - fa, () => R(0, 0, W, H, '#000'));
+    }
+  }
+  let a = 0, txt = '';
+  for (const [a0, a1, s] of CAPS) if (t >= a0 && t <= a1) { txt = s; a = fd(t, a0, a1, .9, .9); }
+  if (txt && capEl.textContent !== txt) capEl.textContent = txt;
+  stageEl.classList.toggle('end', t > 60.2);
+  capEl.style.opacity = a;
+  LY.forEach(([a0, a1], i) => { const e = lyEls[i], u = fd(t, a0, a1, 1.8, 1.8); e.style.opacity = u * .72; e.style.transform = 'translateY(' + (-(t - a0) * .35) + 'cqw)'; });
+  titleEl.style.opacity = fd(t, 53.2, 59.8, 1.6, .9);
+  frmEl.style.opacity = fd(t, 53.6, 59.8, 1.8, .9);
+  ornEl.style.opacity = fd(t, 55.0, 59.8, 1.4, .9);
+  subEl.style.opacity = fd(t, 55.3, 59.8, 1.4, .9);
+  by0El.style.opacity = fd(t, 57.0, 59.8, 1.2, .9);
+  credEl.style.opacity = fd(t, 61.2, 68.8, 1.8, 1.0);
+  requestAnimationFrame(frame);
+};
+let t0 = performance.now();
+const go = () => { t0 = performance.now(); requestAnimationFrame(frame); };
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
+})();
+</script>
+</body>
+</html>

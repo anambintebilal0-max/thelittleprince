@@ -11,7 +11,10 @@
   html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none}
   body{display:flex;align-items:center;justify-content:center}
   #stage{position:relative;width:min(100vw,177.78vh);height:min(56.25vw,100vh);container-type:size;background:#000;pointer-events:none;user-select:none;overflow:hidden}
-  canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+  #cwrap{position:absolute;inset:0;will-change:transform}
+  #cwrap canvas{position:absolute;inset:0;display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+  #cwrap #glow{image-rendering:auto;filter:blur(.9vw) saturate(1.35);mix-blend-mode:screen;opacity:.42}
+  #snd{position:absolute;top:0;right:2.2cqw;height:8cqh;line-height:8cqh;font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:1.35cqw;letter-spacing:.12em;color:#e8d4a0;opacity:0;transition:opacity 1s}
   #vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.45) 100%)}
   .bar{position:absolute;left:0;right:0;height:8cqh;background:#000}
   #bt{top:0;border-bottom:1px solid rgba(214,176,92,.35)}
@@ -24,7 +27,8 @@
   .ly{position:absolute;opacity:0;white-space:nowrap;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-style:italic;font-weight:500;
       font-size:2.3cqw;letter-spacing:.14em;color:#f4e3b8;text-shadow:0 0 1.6cqw rgba(255,214,120,.5),0 .15cqw .5cqw rgba(0,0,0,.85),0 0 1.2cqw rgba(40,20,10,.7)}
   #title{top:13cqw;font-family:'Cinzel',Georgia,'Times New Roman',serif;font-weight:600;
-         font-size:5.6cqw;letter-spacing:.18em;color:#f7dc92;text-shadow:0 0 2cqw rgba(255,200,90,.5),0 .3cqw 1.2cqw #000}
+         font-size:5.6cqw;letter-spacing:.18em;color:transparent;text-shadow:none;background:linear-gradient(100deg,#d4a94e 0%,#fff3c0 25%,#d4a94e 50%,#fff3c0 75%,#d4a94e 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;animation:shim 5s linear infinite;filter:drop-shadow(0 0 1.2cqw rgba(255,200,90,.5)) drop-shadow(0 .3cqw .8cqw #000)}
+  @keyframes shim{to{background-position:-250% 0}}
   #sub{top:22.5cqw;font-size:2.4cqw;letter-spacing:.12em}
   #by0{top:30.2cqw;font-family:'Cinzel',Georgia,serif;font-weight:400;font-size:1.3cqw;letter-spacing:.24em;color:#e9d7ad}
   #credit{top:50%;transform:translateY(-50%);font-family:'Cinzel',Georgia,'Times New Roman',serif;
@@ -41,11 +45,12 @@
 </head>
 <body>
 <div id="stage">
-  <canvas id="c"></canvas>
+  <div id="cwrap"><canvas id="c"></canvas><canvas id="glow"></canvas></div>
   <div id="vig"></div>
   <div class="bar" id="bt"></div>
   <div class="bar" id="bb"></div>
   <div id="lyrics"></div>
+  <div id="snd">♪ tap anywhere for sound</div>
   <div class="t" id="cap"></div>
   <div class="t" id="title">THE LITTLE PRINCE</div>
   <div class="t" id="sub">A story for everyone who was once a child.</div>
@@ -60,6 +65,9 @@
 const W = 320, H = 180;
 const cv = document.getElementById('c'); cv.width = W; cv.height = H;
 const main = cv.getContext('2d');
+const glowCv = document.getElementById('glow'); glowCv.width = 160; glowCv.height = 90;
+const gctx = glowCv.getContext('2d');
+const cwrap = document.getElementById('cwrap');
 let g = main;
 
 /* ---------- tiny pixel toolkit ---------- */
@@ -543,16 +551,77 @@ const $ = id => document.getElementById(id);
 const stageEl = $('stage'), capEl = $('cap'), titleEl = $('title'), subEl = $('sub'), by0El = $('by0'), frmEl = $('frm'), ornEl = $('orn'), credEl = $('credit');
 const fd = (t, a, b, fi = 1.2, fo = 1) => (t < a || t > b) ? 0 : Math.min(1, (t - a) / fi, (b - t) / fo);
 
+/* ---------- generative twinkle soundtrack (WebAudio, no audio files) ---------- */
+const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+const CH = [
+  { pad: [50, 54, 57, 61, 66], arp: [74, 78, 81, 85, 81, 78], bass: 38 },
+  { pad: [47, 50, 54, 57, 62], arp: [71, 74, 78, 81, 78, 74], bass: 35 },
+  { pad: [55, 59, 62, 66, 69], arp: [67, 71, 74, 78, 74, 71], bass: 43 },
+  { pad: [45, 49, 52, 59, 64], arp: [69, 73, 76, 83, 76, 73], bass: 45 }
+];
+const SPARK = [86, 88, 90, 93, 95, 98, 100];
+let AC = null, master = null, bus = null, padBus = null, nextBeat = 0, beat = 0, lastVol = -1;
+const initAudio = () => {
+  const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
+  try {
+    AC = new Ctx();
+    master = AC.createGain(); master.gain.value = 0;
+    const comp = AC.createDynamicsCompressor(); master.connect(comp); comp.connect(AC.destination);
+    bus = AC.createGain(); bus.gain.value = 1; bus.connect(master);
+    const conv = AC.createConvolver(), n = AC.sampleRate * 3.2 | 0, ir = AC.createBuffer(2, n, AC.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6); }
+    conv.buffer = ir; const wet = AC.createGain(); wet.gain.value = .75; bus.connect(conv); conv.connect(wet); wet.connect(master);
+    padBus = AC.createBiquadFilter(); padBus.type = 'lowpass'; padBus.frequency.value = 1100; padBus.connect(bus);
+    setInterval(tickAudio, 90);
+    const wake = () => { if (AC && AC.state !== 'running') AC.resume(); };
+    ['pointerdown', 'keydown', 'touchstart', 'click'].forEach(ev => window.addEventListener(ev, wake, { passive: true }));
+    wake();
+  } catch (e) { AC = null; }
+};
+const voice = (type, f, t0, dur, vol, att, dest, pan) => {
+  const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(vol, t0 + att); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); let out = g;
+  if (pan !== undefined && AC.createStereoPanner) { const p = AC.createStereoPanner(); p.pan.value = pan; g.connect(p); out = p; }
+  out.connect(dest); o.start(t0); o.stop(t0 + dur + .05);
+};
+const bell = (m, t0, vol, pan) => { const f = mtof(m); voice('sine', f, t0, 2.6, vol, .004, bus, pan); voice('sine', f * 2.01, t0, 1.2, vol * .35, .003, bus, pan); voice('sine', f * 3.99, t0, .5, vol * .12, .002, bus, pan); };
+const padNote = (m, t0, dur, vol) => { const f = mtof(m); voice('triangle', f * 1.003, t0, dur, vol, 1.6, padBus); voice('triangle', f * .997, t0, dur, vol, 1.6, padBus); };
+const tickAudio = () => {
+  if (!AC || AC.state !== 'running') return;
+  if (nextBeat < AC.currentTime) nextBeat = AC.currentTime + .1;
+  while (nextBeat < AC.currentTime + .3) {
+    const c = CH[Math.floor(beat / 8) % 4], i = beat % 8, tt = nextBeat;
+    if (i === 0) { c.pad.forEach((m, k) => padNote(m, tt + k * .06, 6.5, .03)); voice('sine', mtof(c.bass), tt, 6, .08, 1.2, padBus); }
+    if (i % 2 === 0 || Math.random() < .35) bell(c.arp[beat % c.arp.length], tt, .055 + Math.random() * .02, Math.sin(beat) * .5);
+    if (Math.random() < .3) bell(SPARK[Math.random() * SPARK.length | 0], tt + Math.random() * .4, .02 + Math.random() * .02, Math.random() * 1.6 - .8);
+    nextBeat += .5; beat++;
+  }
+};
+const sndEl = document.getElementById('snd');
+const audioUpdate = t => {
+  const running = AC && AC.state === 'running';
+  sndEl.style.opacity = (!running && t < 56) ? .8 : 0;
+  if (!running) return;
+  const v = Math.min(1, t / 4) * (t > 62 ? Math.max(0, (68.6 - t) / 6.6) : 1) * .85;
+  if (Math.abs(v - lastVol) > .01) { master.gain.setTargetAtTime(v, AC.currentTime, .25); lastVol = v; }
+};
+initAudio();
+
 const frame = now => {
   const t = ((now - t0) / 1000) % TOTAL;
+  audioUpdate(t);
   main.globalAlpha = 1; main.fillStyle = '#000'; main.fillRect(0, 0, W, H); g = main;
   for (const s of SC) {
     if (t >= s.s && t < s.s + s.d) {
       const lt = t - s.s; s.f(lt);
+      { const k = lt / s.d, zi = SC.indexOf(s); cwrap.style.transformOrigin = zi % 2 ? '66% 58%' : '34% 52%'; cwrap.style.transform = 'scale(' + (1.012 + .05 * k).toFixed(4) + ')'; }
       const fa = Math.min(1, lt / .9, (s.d - lt) / .9);
       A(1 - fa, () => R(0, 0, W, H, '#000'));
     }
   }
+  gctx.drawImage(cv, 0, 0, 160, 90);
+  if (t > 60) cwrap.style.transform = 'none';
   let a = 0, txt = '';
   for (const [a0, a1, s] of CAPS) if (t >= a0 && t <= a1) { txt = s; a = fd(t, a0, a1, .9, .9); }
   if (txt && capEl.textContent !== txt) capEl.textContent = txt;
